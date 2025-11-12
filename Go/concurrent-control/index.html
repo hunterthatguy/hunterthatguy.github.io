@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 5.4.1">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"hunterthatguy.github.io","root":"/","images":"/images","scheme":"Mist","darkmode":false,"version":"8.10.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"valine","storage":true,"lazyload":false,"nav":null,"activeClass":"valine"},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+  <meta name="description" content="go语言在高并发场景下会用到几种关键性技术：处理协程优雅退出的context，检查并发数据争用的race工具，以及传统的同步原语——锁。 context在go程序中可能同时存在许多协程，这些协程被动态的创建和销毁。例如在http服务器中无时无刻不在发生新连接的建立，每个连接都可能新建一个协程。虽然请求完成后协程会随之销毁，考虑到连接可能超时或终止，context的引入无疑提供了一种优雅控制协程退出">
+<meta property="og:type" content="article">
+<meta property="og:title" content="并发控制">
+<meta property="og:url" content="http://hunterthatguy.github.io/Go/concurrent-control/index.html">
+<meta property="og:site_name" content="静水流深">
+<meta property="og:description" content="go语言在高并发场景下会用到几种关键性技术：处理协程优雅退出的context，检查并发数据争用的race工具，以及传统的同步原语——锁。 context在go程序中可能同时存在许多协程，这些协程被动态的创建和销毁。例如在http服务器中无时无刻不在发生新连接的建立，每个连接都可能新建一个协程。虽然请求完成后协程会随之销毁，考虑到连接可能超时或终止，context的引入无疑提供了一种优雅控制协程退出">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-02-13T10:08:25.000Z">
+<meta property="article:modified_time" content="2025-11-12T13:09:11.700Z">
+<meta property="article:author" content="Hunter">
+<meta property="article:tag" content="Go">
+<meta property="article:tag" content="并发">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://hunterthatguy.github.io/Go/concurrent-control/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://hunterthatguy.github.io/Go/concurrent-control/","path":"Go/concurrent-control/","title":"并发控制"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>并发控制 | 静水流深</title>
+  
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">静水流深</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li>
+        <li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li>
+        <li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#context"><span class="nav-number">1.</span> <span class="nav-text">context</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#race"><span class="nav-number">2.</span> <span class="nav-text">race</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Mutex"><span class="nav-number">3.</span> <span class="nav-text">Mutex</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Hunter</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">4</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/hunter-327" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;hunter-327" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://hunterthatguy.github.io/Go/concurrent-control/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Hunter">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="静水流深">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          并发控制
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2022-02-13 18:08:25" itemprop="dateCreated datePublished" datetime="2022-02-13T18:08:25+08:00">2022-02-13</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2025-11-12 21:09:11" itemprop="dateModified" datetime="2025-11-12T21:09:11+08:00">2025-11-12</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Go/" itemprop="url" rel="index"><span itemprop="name">Go</span></a>
+        </span>
+    </span>
+
+  
+  
+  <span class="post-meta-item">
+    
+    <span class="post-meta-item-icon">
+      <i class="far fa-comment"></i>
+    </span>
+    <span class="post-meta-item-text">Valine：</span>
+  
+    <a title="valine" href="/Go/concurrent-control/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/Go/concurrent-control/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>go语言在高并发场景下会用到几种关键性技术：处理协程优雅退出的context，检查并发数据争用的race工具，以及传统的同步原语——锁。</p>
+<h2 id="context"><a href="#context" class="headerlink" title="context"></a>context</h2><p>在go程序中可能同时存在许多协程，这些协程被动态的创建和销毁。例如在http服务器中无时无刻不在发生新连接的建立，每个连接都可能新建一个协程。虽然请求完成后协程会随之销毁，考虑到连接可能超时或终止，context的引入无疑提供了一种优雅控制协程退出的手段。</p>
+<span id="more"></span>
+
+<p>context一般作为函数的第一个参数，在数据库和网络中被频繁使用。其内部通过通道关闭的机制实现继承链上协程的退出通信。其在很大程度上利用了通道在close时会通知所有监听它的协程这一特性来实现。每个派生出的子协程都会创建一个新的退出通道，组织好context之间的关系即可实现继承链上退出的传递。具体原理是通过propagateCancel函数将子context加入父协程的children hashmap中，并开启自身的timer，timer到期会调用cancel方法关闭自身通道和所有子context的通道。</p>
+<p>此外，context.Context接口中还提供了一个Value方法，可以提供在一个链路上的轻量级数据存储，且不会破坏原有的功能性接口。常被用于安全凭证，分布式traceid，退出信号、操作优先级与到期时间等场景。该值的作用域在结束时终结。</p>
+<h2 id="race"><a href="#race" class="headerlink" title="race"></a>race</h2><p>race工具常用于排查高并发场景下的数据争用。数据争用在go语言中指两个协程同时访问相同的内存空间，并且至少有一个在写操作。这种情况下会导致结果不明确。race可以检测数据争用并打印error report。其底层原理是通过CGO调用了ThreadSanitizer。</p>
+<p><strong>矢量时钟：</strong>用来观察事件之间的happen-before顺序。可以检测和确定分布式系统中的事件因果关系。n个协程对应n个逻辑时钟，矢量时钟是其组成的数组，每个特定事件都会增加该协程 自己的逻辑时钟。</p>
+<h2 id="Mutex"><a href="#Mutex" class="headerlink" title="Mutex"></a>Mutex</h2><p>传统的同步原语包括原子锁，互斥锁以及读写锁。</p>
+<p>go语言的互斥锁算是一种混合锁，结合了原子操作、自旋、信号量、全局哈希表、等待队列、操作系统级别锁等多种技术，实现相对复杂。但是go语言的锁相对于操作系统级别的锁更快，因为在大部分情况下锁的争用停留在用户态。</p>
+<p>其通过sync.Mutex构建互斥锁。sync.Mutex的结构比较简单，包含了表示当前锁状态的state以及信号量sema。state通过位图的形式存储了当前锁的状态，其中包含锁是否为锁定状态、正在等待被锁唤醒的协程数量、两个和饥饿模式有关的标志。</p>
+<p><strong>饥饿模式：</strong>unlock会唤醒最先申请加速的协程。</p>
+<p><strong>互斥锁的加锁三个阶段：</strong></p>
+<p>阶段1：原子操作快速抢占锁，atomic.CompareAndSwapInt32，失败则调用lockSlow自旋抢占锁一段时间，锁只有在正常模式下才能进入自旋状态，rumtime_canSpin函数</p>
+<p>阶段2：信号量sema同步，加锁减1，解锁加1，大于0加锁协程可以直接退出，等于0则加锁协程需要陷入休眠</p>
+<p>阶段3：锁的信息存储在全局semtable哈希表中，互斥锁加入等待队列，hash冲突则维护一个双向链表，其还被构造成了特殊的treap树（引入随机数的二叉搜索树），以便快速查找是否存在已经存在过的锁，如果已经存在，将当前协程添加到等待队列的尾部，如果不存在则加入treap树，维护公平性</p>
+<p>互斥锁最终被放置到全局的等待队列中等待唤醒，FIFO</p>
+<p><strong>互斥锁的释放：</strong></p>
+<p>1: 普通锁定，没有进入饥饿和唤醒状态，修改mutexLocked状态后立即退出，否则调用unlockSlow</p>
+<p>2.是否重复释放</p>
+<p>3.处于饥饿状态则进入信号量同步阶段，到semtable中寻找当前锁的等待队列，FIFO唤醒</p>
+<p>4.未处于饥饿状态且mutexWoken已经设置，表明有其他申请锁的协程准备从正常状态下退出</p>
+<p><strong>读写锁：</strong>适用于读多写少的场景，读写互斥，读多写单</p>
+<p><strong>读写锁原理：</strong>复用了互斥锁和信号量两种机制。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Go/" rel="tag"># Go</a>
+              <a href="/tags/%E5%B9%B6%E5%8F%91/" rel="tag"># 并发</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+            </div>
+            <div class="post-nav-item">
+                <a href="/Go/philosophy-in-Go-language/" rel="next" title="Go语言设计哲学">
+                  Go语言设计哲学 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments" id="valine-comments"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2025</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Hunter</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/mist/" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+<script src="https://cdn.jsdelivr.net/npm/hexo-generator-searchdb@1.4.0/dist/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  
+
+
+
+
+
+
+<script class="next-config" data-name="valine" type="application/json">{"enable":true,"appId":"tml6i2S6ebmoJqqtMkMoqscD-gzGzoHsz","appKey":"v0bXHiOi6kKDzxCYpCebgxgH","serverURLs":"https://tml6i2s6.lc-cn-n1-shared.com/","placeholder":"Just go go","avatar":"mm","meta":["nick","mail","link"],"pageSize":10,"lang":null,"visitor":false,"comment_count":true,"recordIP":false,"enableQQ":false,"requiredFields":[],"el":"#valine-comments","path":"/Go/concurrent-control/"}</script>
+<script>
+document.addEventListener('page:loaded', () => {
+  NexT.utils.loadComments(CONFIG.valine.el)
+    .then(() => NexT.utils.getScript(
+      'https://cdn.jsdelivr.net/npm/valine@1.4.14/dist/Valine.min.js',
+      { condition: window.Valine }
+    ))
+    .then(() => {
+      new Valine(CONFIG.valine);
+    });
+});
+</script>
+
+</body>
+</html>
