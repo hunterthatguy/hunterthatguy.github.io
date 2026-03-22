@@ -1,107 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>Go基础知识</title>
-    <url>/Go/Go-basic/</url>
-    <content><![CDATA[<h2 id="1-1-语言简介"><a href="#1-1-语言简介" class="headerlink" title="1.1 语言简介"></a>1.1 语言简介</h2><p>Go： 解决并发支持不友好、编译速度慢、编程复杂这三个问题</p>
-<h2 id="1-2-初识-Go-程序-amp-1-3-Go词法单元"><a href="#1-2-初识-Go-程序-amp-1-3-Go词法单元" class="headerlink" title="1.2 初识 Go 程序 &amp; 1.3 Go词法单元"></a>1.2 初识 Go 程序 &amp; 1.3 Go词法单元</h2><p>token是原子单元，分为三类：标识符、操作符和分隔符、字面常量</p>
-<span id="more"></span>
-
-<h3 id="标识符"><a href="#标识符" class="headerlink" title="标识符"></a>标识符</h3><p><strong>A. 预声明标识符（65个）</strong></p>
-<p>25 个<strong>关键字</strong>，分为：</p>
-<p>引导程序整体结构的 8 个关键字（package, import, const, var, func, defer, go, return）</p>
-<p>声明复合结构的 4 个关键字（struct, interface, map, chan）</p>
-<p>控制程序结构的 13 个关键字</p>
-<p>20 个<strong>内置数据类型</strong>标识符，分为：</p>
-<p>数值 16 个（整型 12 个，浮点型 2 个，复数型 2 个），字符和字符串型 2 个，接口型 1 个，布尔型 1 个</p>
-<p>词法解析：</p>
-<p>15 个<strong>内置函数</strong>，具有全局可见性（make, new, cap, append, copy, delete, panic, recover, close, complex, real, image, print, println）</p>
-<p>4 个常量值标识符（true, false, iota, nil）</p>
-<p>1 个空白标识符（_）</p>
-<p><strong>B. 用户自定义标识符</strong></p>
-<p>包名、变量名、常量名、函数名、自定义类型名、方法名</p>
-<h3 id="操作符和分隔符"><a href="#操作符和分隔符" class="headerlink" title="操作符和分隔符"></a>操作符和分隔符</h3><p>4 个纯粹分隔符：空格、制表符、回车、换行</p>
-<p>47 个<strong>操作符</strong>：分为：</p>
-<p>5 个算术运算符：加减乘除模</p>
-<p>6 个位运算符：&amp;   |   ^  &amp;^  &gt;&gt;  &lt;&lt;</p>
-<p>13 个赋值和赋值复核运算符</p>
-<p>6 个比较运算符</p>
-<p>6 个括号</p>
-<p>3 个逻辑运算符（&amp;&amp;  ||  !）</p>
-<p>2 个自增自减操作符 （++  –  Go中自增自减是语句）</p>
-<p>6 个其他运算符（:  ;  ,  .  …  &lt;-）</p>
-<h3 id="字面常量"><a href="#字面常量" class="headerlink" title="字面常量"></a>字面常量</h3><p>编程语言源程序中表示固定值的符号叫做字面常量（字面量），只能表达基本类型的值</p>
-<p>用于常量和变量的初始化，和表达式里作为函数调用实参</p>
-<p>分为 5 类：</p>
-<p><strong>整型</strong>字面量</p>
-<p><strong>浮点型</strong>字面量</p>
-<p><strong>复数类型</strong>字面量</p>
-<p><strong>字符型</strong>字面量（’’）</p>
-<p><strong>字符串</strong>字面量（””）</p>
-<h2 id="1-4-变量和常量"><a href="#1-4-变量和常量" class="headerlink" title="1.4 变量和常量"></a>1.4 变量和常量</h2><p>通过自定义标识符绑定一块特定的内存，把对地址的操作和引用变为对变量的操作，这是编程领域的巨大进步</p>
-<h3 id="变量"><a href="#变量" class="headerlink" title="变量"></a>变量</h3><p>该内存地址中存放的数据类型由定义变量时指定的类型决定，变量指向的内存内容可以被修改</p>
-<p>声明：</p>
-<p>var name dataType  &#x3D; value （value不指定默认该类型零值）</p>
-<p>name :&#x3D; value (只能在函数内，自动类型推断)</p>
-<p>Go的自动内存管理中的编译器栈逃逸技术能够自动为变量分配空间，可能在栈上也可能在堆上</p>
-<h3 id="常量"><a href="#常量" class="headerlink" title="常量"></a>常量</h3><p>该内存地址中存放的数据类型由定义常量时指定的类型决定，常量指向的内存不能被修改，存储在只读段。分为布尔型、字符串型、数值型</p>
-<p>iota用在常量声明中，其初始值为0，可以看作自增的枚举常量</p>
-<h2 id="1-5-基本数据类型"><a href="#1-5-基本数据类型" class="headerlink" title="1.5 基本数据类型"></a>1.5 基本数据类型</h2><p>Go是一种强类型的静态编译语言，类型是高级语言的基础</p>
-<p>7 种基本数据类型，20 个具体子类型</p>
-<p><strong>布尔型</strong>：bool</p>
-<p>不指定初始值默认false</p>
-<p><strong>整型</strong>：byte, int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64, uintptr</p>
-<p>byte是uint8的别名，不同类型需要强转</p>
-<p><strong>浮点型</strong>：float32, float64</p>
-<p>字面量自动推断为float64，两个浮点数不应该使用&#x3D;&#x3D;或!&#x3D;进行比较，因为计算机很难进行浮点数的精确表示和存储，使用math标准库</p>
-<p><strong>复数</strong>：complex64, complex128</p>
-<p>complex64由2个float32构成，complex128由2个float64构成</p>
-<p>var v &#x3D; complex(2.1, 3)</p>
-<p><strong>字符</strong>：rune</p>
-<p>rune是表示Unicode编码的字符，内部是int32的别名，占用4个字节</p>
-<p>此外，byte字节类类型，内部是uint8的别名，也是字符类型</p>
-<p><strong>字符串</strong>：string</p>
-<p>常量，可以通过类似数组的索引访问字节单元，但是不能修改</p>
-<p>[]byte() 字符串转切片要慎用，因为没转换一次都要复制内容</p>
-<p>底层实现是一个二元的存储结构，一个指向字节数组的起点，一个是长度</p>
-<p>基于其的切片操作返回的是string，而非slice</p>
-<p><strong>错误类型</strong>：error</p>
-<h2 id="1-6-复合数据类型"><a href="#1-6-复合数据类型" class="headerlink" title="1.6 复合数据类型"></a>1.6 复合数据类型</h2><p>由其他类型组合而成的类型</p>
-<h3 id="指针"><a href="#指针" class="headerlink" title="指针"></a>指针</h3><p>出现在等号左边表示指针声明，右边表示取指针指向的值</p>
-<p>不支持运算，因为会影响垃圾回收</p>
-<p>允许返回局部变量地址（栈逃逸分配到堆）</p>
-<h3 id="数组"><a href="#数组" class="headerlink" title="数组"></a>数组</h3><p>通过字面量初始化</p>
-<h3 id="切片"><a href="#切片" class="headerlink" title="切片"></a>切片</h3><p>三要素：指向底层数组的指针、切片的元素数量、底层数组的容量</p>
-<p>支持通过数组创建和通过内置函数make创建</p>
-<h3 id="map"><a href="#map" class="headerlink" title="map"></a>map</h3><p>支持字面量创建和通过内置函数make创建</p>
-<p>不要直接修改map内摸个元素内部的值，如果要修改必须整体赋值</p>
-<p>delete(mapName, key)</p>
-<p>len()返回键值对数量</p>
-<h3 id="struct"><a href="#struct" class="headerlink" title="struct"></a>struct</h3><p>可以存储任意类型，存储空间连续</p>
-<p>p :&#x3D; &amp;Person {</p>
-<p>Name: “ ”,</p>
-<p>Age: “ ”,</p>
-<p>}</p>
-<h2 id="1-7-控制结构"><a href="#1-7-控制结构" class="headerlink" title="1.7 控制结构"></a>1.7 控制结构</h2><p>程序执行本质上就两种模式：顺序和跳转</p>
-<h3 id="if-语句"><a href="#if-语句" class="headerlink" title="if 语句"></a>if 语句</h3><p>尽量减少条件语句的复杂度，太复杂考虑封装</p>
-<p>尽量减少if的嵌套层次，通过重构让代码扁平易读</p>
-<h3 id="switch-语句"><a href="#switch-语句" class="headerlink" title="switch 语句"></a>switch 语句</h3><p>default（所有分支都不符合，可以在任意位置）, fallthrough（强制执行下一个case）</p>
-<h3 id="for-语句"><a href="#for-语句" class="headerlink" title="for 语句"></a>for 语句</h3><p>三种C-like写法，for， while，和死循环</p>
-<p>可以遍历map、数组、切片、字符串、通道</p>
-<h3 id="标签和跳转"><a href="#标签和跳转" class="headerlink" title="标签和跳转"></a>标签和跳转</h3><p><strong>Label</strong> </p>
-<p>和 break，continue搭配使用，跳到label标注的位置执行，break直接跳出迭代，continue执行下一个迭代</p>
-<p><strong>goto</strong></p>
-<p>不能越过声明语句，goto到同级或上级作用域</p>
-]]></content>
-      <categories>
-        <category>Go</category>
-      </categories>
-      <tags>
-        <tag>Go</tag>
-        <tag>语法</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>并发控制</title>
     <url>/Go/concurrent-control/</url>
     <content><![CDATA[<p>go语言在高并发场景下会用到几种关键性技术：处理协程优雅退出的context，检查并发数据争用的race工具，以及传统的同步原语——锁。</p>
@@ -200,6 +99,107 @@
       </categories>
       <tags>
         <tag>重构</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Go基础知识</title>
+    <url>/Go/Go-basic/</url>
+    <content><![CDATA[<h2 id="1-1-语言简介"><a href="#1-1-语言简介" class="headerlink" title="1.1 语言简介"></a>1.1 语言简介</h2><p>Go： 解决并发支持不友好、编译速度慢、编程复杂这三个问题</p>
+<h2 id="1-2-初识-Go-程序-amp-1-3-Go词法单元"><a href="#1-2-初识-Go-程序-amp-1-3-Go词法单元" class="headerlink" title="1.2 初识 Go 程序 &amp; 1.3 Go词法单元"></a>1.2 初识 Go 程序 &amp; 1.3 Go词法单元</h2><p>token是原子单元，分为三类：标识符、操作符和分隔符、字面常量</p>
+<span id="more"></span>
+
+<h3 id="标识符"><a href="#标识符" class="headerlink" title="标识符"></a>标识符</h3><p><strong>A. 预声明标识符（65个）</strong></p>
+<p>25 个<strong>关键字</strong>，分为：</p>
+<p>引导程序整体结构的 8 个关键字（package, import, const, var, func, defer, go, return）</p>
+<p>声明复合结构的 4 个关键字（struct, interface, map, chan）</p>
+<p>控制程序结构的 13 个关键字</p>
+<p>20 个<strong>内置数据类型</strong>标识符，分为：</p>
+<p>数值 16 个（整型 12 个，浮点型 2 个，复数型 2 个），字符和字符串型 2 个，接口型 1 个，布尔型 1 个</p>
+<p>词法解析：</p>
+<p>15 个<strong>内置函数</strong>，具有全局可见性（make, new, cap, append, copy, delete, panic, recover, close, complex, real, image, print, println）</p>
+<p>4 个常量值标识符（true, false, iota, nil）</p>
+<p>1 个空白标识符（_）</p>
+<p><strong>B. 用户自定义标识符</strong></p>
+<p>包名、变量名、常量名、函数名、自定义类型名、方法名</p>
+<h3 id="操作符和分隔符"><a href="#操作符和分隔符" class="headerlink" title="操作符和分隔符"></a>操作符和分隔符</h3><p>4 个纯粹分隔符：空格、制表符、回车、换行</p>
+<p>47 个<strong>操作符</strong>：分为：</p>
+<p>5 个算术运算符：加减乘除模</p>
+<p>6 个位运算符：&amp;   |   ^  &amp;^  &gt;&gt;  &lt;&lt;</p>
+<p>13 个赋值和赋值复核运算符</p>
+<p>6 个比较运算符</p>
+<p>6 个括号</p>
+<p>3 个逻辑运算符（&amp;&amp;  ||  !）</p>
+<p>2 个自增自减操作符 （++  –  Go中自增自减是语句）</p>
+<p>6 个其他运算符（:  ;  ,  .  …  &lt;-）</p>
+<h3 id="字面常量"><a href="#字面常量" class="headerlink" title="字面常量"></a>字面常量</h3><p>编程语言源程序中表示固定值的符号叫做字面常量（字面量），只能表达基本类型的值</p>
+<p>用于常量和变量的初始化，和表达式里作为函数调用实参</p>
+<p>分为 5 类：</p>
+<p><strong>整型</strong>字面量</p>
+<p><strong>浮点型</strong>字面量</p>
+<p><strong>复数类型</strong>字面量</p>
+<p><strong>字符型</strong>字面量（’’）</p>
+<p><strong>字符串</strong>字面量（””）</p>
+<h2 id="1-4-变量和常量"><a href="#1-4-变量和常量" class="headerlink" title="1.4 变量和常量"></a>1.4 变量和常量</h2><p>通过自定义标识符绑定一块特定的内存，把对地址的操作和引用变为对变量的操作，这是编程领域的巨大进步</p>
+<h3 id="变量"><a href="#变量" class="headerlink" title="变量"></a>变量</h3><p>该内存地址中存放的数据类型由定义变量时指定的类型决定，变量指向的内存内容可以被修改</p>
+<p>声明：</p>
+<p>var name dataType  &#x3D; value （value不指定默认该类型零值）</p>
+<p>name :&#x3D; value (只能在函数内，自动类型推断)</p>
+<p>Go的自动内存管理中的编译器栈逃逸技术能够自动为变量分配空间，可能在栈上也可能在堆上</p>
+<h3 id="常量"><a href="#常量" class="headerlink" title="常量"></a>常量</h3><p>该内存地址中存放的数据类型由定义常量时指定的类型决定，常量指向的内存不能被修改，存储在只读段。分为布尔型、字符串型、数值型</p>
+<p>iota用在常量声明中，其初始值为0，可以看作自增的枚举常量</p>
+<h2 id="1-5-基本数据类型"><a href="#1-5-基本数据类型" class="headerlink" title="1.5 基本数据类型"></a>1.5 基本数据类型</h2><p>Go是一种强类型的静态编译语言，类型是高级语言的基础</p>
+<p>7 种基本数据类型，20 个具体子类型</p>
+<p><strong>布尔型</strong>：bool</p>
+<p>不指定初始值默认false</p>
+<p><strong>整型</strong>：byte, int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64, uintptr</p>
+<p>byte是uint8的别名，不同类型需要强转</p>
+<p><strong>浮点型</strong>：float32, float64</p>
+<p>字面量自动推断为float64，两个浮点数不应该使用&#x3D;&#x3D;或!&#x3D;进行比较，因为计算机很难进行浮点数的精确表示和存储，使用math标准库</p>
+<p><strong>复数</strong>：complex64, complex128</p>
+<p>complex64由2个float32构成，complex128由2个float64构成</p>
+<p>var v &#x3D; complex(2.1, 3)</p>
+<p><strong>字符</strong>：rune</p>
+<p>rune是表示Unicode编码的字符，内部是int32的别名，占用4个字节</p>
+<p>此外，byte字节类类型，内部是uint8的别名，也是字符类型</p>
+<p><strong>字符串</strong>：string</p>
+<p>常量，可以通过类似数组的索引访问字节单元，但是不能修改</p>
+<p>[]byte() 字符串转切片要慎用，因为没转换一次都要复制内容</p>
+<p>底层实现是一个二元的存储结构，一个指向字节数组的起点，一个是长度</p>
+<p>基于其的切片操作返回的是string，而非slice</p>
+<p><strong>错误类型</strong>：error</p>
+<h2 id="1-6-复合数据类型"><a href="#1-6-复合数据类型" class="headerlink" title="1.6 复合数据类型"></a>1.6 复合数据类型</h2><p>由其他类型组合而成的类型</p>
+<h3 id="指针"><a href="#指针" class="headerlink" title="指针"></a>指针</h3><p>出现在等号左边表示指针声明，右边表示取指针指向的值</p>
+<p>不支持运算，因为会影响垃圾回收</p>
+<p>允许返回局部变量地址（栈逃逸分配到堆）</p>
+<h3 id="数组"><a href="#数组" class="headerlink" title="数组"></a>数组</h3><p>通过字面量初始化</p>
+<h3 id="切片"><a href="#切片" class="headerlink" title="切片"></a>切片</h3><p>三要素：指向底层数组的指针、切片的元素数量、底层数组的容量</p>
+<p>支持通过数组创建和通过内置函数make创建</p>
+<h3 id="map"><a href="#map" class="headerlink" title="map"></a>map</h3><p>支持字面量创建和通过内置函数make创建</p>
+<p>不要直接修改map内摸个元素内部的值，如果要修改必须整体赋值</p>
+<p>delete(mapName, key)</p>
+<p>len()返回键值对数量</p>
+<h3 id="struct"><a href="#struct" class="headerlink" title="struct"></a>struct</h3><p>可以存储任意类型，存储空间连续</p>
+<p>p :&#x3D; &amp;Person {</p>
+<p>Name: “ ”,</p>
+<p>Age: “ ”,</p>
+<p>}</p>
+<h2 id="1-7-控制结构"><a href="#1-7-控制结构" class="headerlink" title="1.7 控制结构"></a>1.7 控制结构</h2><p>程序执行本质上就两种模式：顺序和跳转</p>
+<h3 id="if-语句"><a href="#if-语句" class="headerlink" title="if 语句"></a>if 语句</h3><p>尽量减少条件语句的复杂度，太复杂考虑封装</p>
+<p>尽量减少if的嵌套层次，通过重构让代码扁平易读</p>
+<h3 id="switch-语句"><a href="#switch-语句" class="headerlink" title="switch 语句"></a>switch 语句</h3><p>default（所有分支都不符合，可以在任意位置）, fallthrough（强制执行下一个case）</p>
+<h3 id="for-语句"><a href="#for-语句" class="headerlink" title="for 语句"></a>for 语句</h3><p>三种C-like写法，for， while，和死循环</p>
+<p>可以遍历map、数组、切片、字符串、通道</p>
+<h3 id="标签和跳转"><a href="#标签和跳转" class="headerlink" title="标签和跳转"></a>标签和跳转</h3><p><strong>Label</strong> </p>
+<p>和 break，continue搭配使用，跳到label标注的位置执行，break直接跳出迭代，continue执行下一个迭代</p>
+<p><strong>goto</strong></p>
+<p>不能越过声明语句，goto到同级或上级作用域</p>
+]]></content>
+      <categories>
+        <category>Go</category>
+      </categories>
+      <tags>
+        <tag>Go</tag>
+        <tag>语法</tag>
       </tags>
   </entry>
   <entry>
@@ -693,16 +693,16 @@
       </tags>
   </entry>
   <entry>
+    <title>TAG</title>
+    <url>/tags/index.html</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
     <title>ABOUT</title>
     <url>/about/index.html</url>
     <content><![CDATA[<center>
 思考，等待，斋戒。 ——《悉达多》
 </center>]]></content>
-  </entry>
-  <entry>
-    <title>TAG</title>
-    <url>/tags/index.html</url>
-    <content><![CDATA[]]></content>
   </entry>
   <entry>
     <title>CATEGORY</title>
