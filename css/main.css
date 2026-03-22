@@ -2735,7 +2735,7 @@ hr {
   vertical-align: middle;
 }
 .links-of-author a::before {
-  background: #dffe38;
+  background: #3cffa7;
   display: inline-block;
   margin-right: 3px;
   transform: translateY(-2px);
@@ -3255,4 +3255,7 @@ footer .footer-inner * {
 .collection-title h2,
 .collection-year {
   font-family: Georgia, "Times New Roman", "Songti SC", serif !important;
+}
+.archive.posts-collapse {
+  min-height: calc(100vh - 200px);
 }
