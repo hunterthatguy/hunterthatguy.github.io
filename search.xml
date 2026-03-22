@@ -1,6 +1,107 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>并发控制</title>
+    <url>/Go/concurrent-control/</url>
+    <content><![CDATA[<p>go语言在高并发场景下会用到几种关键性技术：处理协程优雅退出的context，检查并发数据争用的race工具，以及传统的同步原语——锁。</p>
+<h2 id="context"><a href="#context" class="headerlink" title="context"></a>context</h2><p>在go程序中可能同时存在许多协程，这些协程被动态的创建和销毁。例如在http服务器中无时无刻不在发生新连接的建立，每个连接都可能新建一个协程。虽然请求完成后协程会随之销毁，考虑到连接可能超时或终止，context的引入无疑提供了一种优雅控制协程退出的手段。</p>
+<span id="more"></span>
+
+<p>context一般作为函数的第一个参数，在数据库和网络中被频繁使用。其内部通过通道关闭的机制实现继承链上协程的退出通信。其在很大程度上利用了通道在close时会通知所有监听它的协程这一特性来实现。每个派生出的子协程都会创建一个新的退出通道，组织好context之间的关系即可实现继承链上退出的传递。具体原理是通过propagateCancel函数将子context加入父协程的children hashmap中，并开启自身的timer，timer到期会调用cancel方法关闭自身通道和所有子context的通道。</p>
+<p>此外，context.Context接口中还提供了一个Value方法，可以提供在一个链路上的轻量级数据存储，且不会破坏原有的功能性接口。常被用于安全凭证，分布式traceid，退出信号、操作优先级与到期时间等场景。该值的作用域在结束时终结。</p>
+<h2 id="race"><a href="#race" class="headerlink" title="race"></a>race</h2><p>race工具常用于排查高并发场景下的数据争用。数据争用在go语言中指两个协程同时访问相同的内存空间，并且至少有一个在写操作。这种情况下会导致结果不明确。race可以检测数据争用并打印error report。其底层原理是通过CGO调用了ThreadSanitizer。</p>
+<p><strong>矢量时钟：</strong>用来观察事件之间的happen-before顺序。可以检测和确定分布式系统中的事件因果关系。n个协程对应n个逻辑时钟，矢量时钟是其组成的数组，每个特定事件都会增加该协程 自己的逻辑时钟。</p>
+<h2 id="Mutex"><a href="#Mutex" class="headerlink" title="Mutex"></a>Mutex</h2><p>传统的同步原语包括原子锁，互斥锁以及读写锁。</p>
+<p>go语言的互斥锁算是一种混合锁，结合了原子操作、自旋、信号量、全局哈希表、等待队列、操作系统级别锁等多种技术，实现相对复杂。但是go语言的锁相对于操作系统级别的锁更快，因为在大部分情况下锁的争用停留在用户态。</p>
+<p>其通过sync.Mutex构建互斥锁。sync.Mutex的结构比较简单，包含了表示当前锁状态的state以及信号量sema。state通过位图的形式存储了当前锁的状态，其中包含锁是否为锁定状态、正在等待被锁唤醒的协程数量、两个和饥饿模式有关的标志。</p>
+<p><strong>饥饿模式：</strong>unlock会唤醒最先申请加速的协程。</p>
+<p><strong>互斥锁的加锁三个阶段：</strong></p>
+<p>阶段1：原子操作快速抢占锁，atomic.CompareAndSwapInt32，失败则调用lockSlow自旋抢占锁一段时间，锁只有在正常模式下才能进入自旋状态，rumtime_canSpin函数</p>
+<p>阶段2：信号量sema同步，加锁减1，解锁加1，大于0加锁协程可以直接退出，等于0则加锁协程需要陷入休眠</p>
+<p>阶段3：锁的信息存储在全局semtable哈希表中，互斥锁加入等待队列，hash冲突则维护一个双向链表，其还被构造成了特殊的treap树（引入随机数的二叉搜索树），以便快速查找是否存在已经存在过的锁，如果已经存在，将当前协程添加到等待队列的尾部，如果不存在则加入treap树，维护公平性</p>
+<p>互斥锁最终被放置到全局的等待队列中等待唤醒，FIFO</p>
+<p><strong>互斥锁的释放：</strong></p>
+<p>1: 普通锁定，没有进入饥饿和唤醒状态，修改mutexLocked状态后立即退出，否则调用unlockSlow</p>
+<p>2.是否重复释放</p>
+<p>3.处于饥饿状态则进入信号量同步阶段，到semtable中寻找当前锁的等待队列，FIFO唤醒</p>
+<p>4.未处于饥饿状态且mutexWoken已经设置，表明有其他申请锁的协程准备从正常状态下退出</p>
+<p><strong>读写锁：</strong>适用于读多写少的场景，读写互斥，读多写单</p>
+<p><strong>读写锁原理：</strong>复用了互斥锁和信号量两种机制。</p>
+]]></content>
+      <categories>
+        <category>Go</category>
+      </categories>
+      <tags>
+        <tag>Go</tag>
+        <tag>并发</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Go语言设计哲学</title>
+    <url>/Go/philosophy-in-Go-language/</url>
+    <content><![CDATA[<p>Go语言的编程哲学：少即是多，并行、组合、正交、非侵入式的接口。</p>
+<p>设计软件有两种方法，一种是简单到没有明显缺陷，另一种是复杂到缺陷不那么明显，Go语言设计者明显选择的是前者。</p>
+<span id="more"></span>
+
+<p><strong>少即是多：</strong>控制语言特性的数量、语言使用的复杂性。只提供一种方法做事情，把事情做到极致，是Go的设计思想之一，比如循环只提供一个for关键字等等。Go的开发者认为增加语言特性并不能保证开发效率的提升，复杂性的增加导致使用者容易犯错，而有些复杂的语言特性可以通过库等其他形式来辅助支持。</p>
+<p><strong>正交：</strong>正交是保证事物稳定性和简单性的最好设计。Go的很多特性比如goroutine、接口、类型系统等都是正交的，特性的组合提高了可用性，而并没有增加使用的复杂性。</p>
+<p><strong>并行：</strong>Go原生支持并发，更容易对原本就并行的世界进行建模。</p>
+<p>组合：组合优于继承。继承关系只是万物各种关系的一个子集，只有组合才是世间万物最根本的，常见的关系，使用组合这种很自然的方式来建模世界，其表现力往往比以继承为基础的面向对象的语言更强。</p>
+<p><strong>非侵入式的接口：</strong>分层是计算机领域的一个重要指导思想，而接口是分层实现的一种重要战术手段。Go语言的接口采用的是一种Duck模型，具体类型不需要显式地声明自己实现了某个接口，只要其方法集是接口方法集的超集即可，判断类型是否实现接口完全交给编译器处理，从而将接口和实现者彻底解耦。这个特性使得Go程序迭代和重构更加容易。</p>
+<p>设计模式并不是语言优秀带来的副产品，而是因为语言表现力不足而不得不依赖经验积累进行弥补。虽然Go在包管理、泛型支持和错误处理上还有很多不尽人意的地方，但是Go作为面向工程的实用主义者无疑具有巨大的潜力。</p>
+]]></content>
+      <categories>
+        <category>Go</category>
+      </categories>
+      <tags>
+        <tag>Go</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>代码的坏味道</title>
+    <url>/code/restructure-the-code/</url>
+    <content><![CDATA[<p>如果想要重构代码，则不仅需要了解如何重构，还需要了解需要何时重构、何时已经达到了满意的效果避免过度重构。在《重构：改善既有代码的设计》一书中，提到了22种类型的bad code：</p>
+<span id="more"></span>
+
+<p>1.Duplicated Code</p>
+<p>如果同一个类或两个不同类的两个函数拥有相同的表达式和语句，应该第一时间想到抽取重复代码放在合适的位置比如独立类或者父类中，如果相似不全相同则可以通过template method设计模式处理，最大程度避免代码冗余。</p>
+<p>2.Long Method</p>
+<p>一般而言函数越长越难理解，现在的Object-Oriented语言基本上免除了进程内的函数调用开销。应该积极地按照功能点分解函数，并且做到函数命名能够解释其用途。</p>
+<p>3.Large Class</p>
+<p>如果一个类过大，那么往往会在使用的过程中产生很多实例变量，并且一般不会一直使用所有实例变量，因而出现很多重复代码。可以将类中彼此关系比较紧密的变量放在一起，进而拆解出多个功能明确的新类。</p>
+<p>4.Long Parameter List</p>
+<p>太长的参数列增加了理解难度，并且可能会造成前后不一致，维护困难等问题。可以通过对象的形式传递参数，或者以提取get函数取代参数。</p>
+<p>5.Divergent Change</p>
+<p>如果某个类经常因为不同的原因而在不同的方向上变化，那么就需要考虑拆分当前的类为更小的粒度，针对某一外界变化的所有相应修改都应该只发生在一个单一类中，而这个新类的所有内容都应该反应此变化。</p>
+<p>6.Shotgun Surgery</p>
+<p>如果对于一种变化能够引起“牵一发而动全身”的修改，就需要考虑把一系列相关的行为放进一个现有的合适的类或者提取新类了。</p>
+<p>7.Feature Envy</p>
+<p>数据应该和其对应的操作行为绑定一起，如果发生了交叉，那么最好进行改造和移动。</p>
+<p>8.Data Clumps</p>
+<p>类似Duplicated Code，如果多个类用于相同的字段，许多函数签名中拥有相同的参数，考虑将它们提炼到一个独立对象中。</p>
+<p>9.Primitive Obsession</p>
+<p>10.Switch Statemens</p>
+<p>11.Parallel Inheritance Hierarchies</p>
+<p>12.Lazy Class</p>
+<p>13.Speculative Generality</p>
+<p>14.Temporary Field</p>
+<p>15.MEssage Chains</p>
+<p>16.Middle Man</p>
+<p>17.Inappripriate Intimacy</p>
+<p>18.Alternative Classes with Different Interfaces</p>
+<p>19.Incomplete Library Class</p>
+<p>20.Data Class</p>
+<p>21.Refused Bequest</p>
+<p>22.Comments</p>
+]]></content>
+      <categories>
+        <category>code</category>
+      </categories>
+      <tags>
+        <tag>重构</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Go基础知识</title>
     <url>/Go/Go-basic/</url>
     <content><![CDATA[<h2 id="1-1-语言简介"><a href="#1-1-语言简介" class="headerlink" title="1.1 语言简介"></a>1.1 语言简介</h2><p>Go： 解决并发支持不友好、编译速度慢、编程复杂这三个问题</p>
@@ -99,107 +200,6 @@
       <tags>
         <tag>Go</tag>
         <tag>语法</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Go语言设计哲学</title>
-    <url>/Go/philosophy-in-Go-language/</url>
-    <content><![CDATA[<p>Go语言的编程哲学：少即是多，并行、组合、正交、非侵入式的接口。</p>
-<p>设计软件有两种方法，一种是简单到没有明显缺陷，另一种是复杂到缺陷不那么明显，Go语言设计者明显选择的是前者。</p>
-<span id="more"></span>
-
-<p><strong>少即是多：</strong>控制语言特性的数量、语言使用的复杂性。只提供一种方法做事情，把事情做到极致，是Go的设计思想之一，比如循环只提供一个for关键字等等。Go的开发者认为增加语言特性并不能保证开发效率的提升，复杂性的增加导致使用者容易犯错，而有些复杂的语言特性可以通过库等其他形式来辅助支持。</p>
-<p><strong>正交：</strong>正交是保证事物稳定性和简单性的最好设计。Go的很多特性比如goroutine、接口、类型系统等都是正交的，特性的组合提高了可用性，而并没有增加使用的复杂性。</p>
-<p><strong>并行：</strong>Go原生支持并发，更容易对原本就并行的世界进行建模。</p>
-<p>组合：组合优于继承。继承关系只是万物各种关系的一个子集，只有组合才是世间万物最根本的，常见的关系，使用组合这种很自然的方式来建模世界，其表现力往往比以继承为基础的面向对象的语言更强。</p>
-<p><strong>非侵入式的接口：</strong>分层是计算机领域的一个重要指导思想，而接口是分层实现的一种重要战术手段。Go语言的接口采用的是一种Duck模型，具体类型不需要显式地声明自己实现了某个接口，只要其方法集是接口方法集的超集即可，判断类型是否实现接口完全交给编译器处理，从而将接口和实现者彻底解耦。这个特性使得Go程序迭代和重构更加容易。</p>
-<p>设计模式并不是语言优秀带来的副产品，而是因为语言表现力不足而不得不依赖经验积累进行弥补。虽然Go在包管理、泛型支持和错误处理上还有很多不尽人意的地方，但是Go作为面向工程的实用主义者无疑具有巨大的潜力。</p>
-]]></content>
-      <categories>
-        <category>Go</category>
-      </categories>
-      <tags>
-        <tag>Go</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>并发控制</title>
-    <url>/Go/concurrent-control/</url>
-    <content><![CDATA[<p>go语言在高并发场景下会用到几种关键性技术：处理协程优雅退出的context，检查并发数据争用的race工具，以及传统的同步原语——锁。</p>
-<h2 id="context"><a href="#context" class="headerlink" title="context"></a>context</h2><p>在go程序中可能同时存在许多协程，这些协程被动态的创建和销毁。例如在http服务器中无时无刻不在发生新连接的建立，每个连接都可能新建一个协程。虽然请求完成后协程会随之销毁，考虑到连接可能超时或终止，context的引入无疑提供了一种优雅控制协程退出的手段。</p>
-<span id="more"></span>
-
-<p>context一般作为函数的第一个参数，在数据库和网络中被频繁使用。其内部通过通道关闭的机制实现继承链上协程的退出通信。其在很大程度上利用了通道在close时会通知所有监听它的协程这一特性来实现。每个派生出的子协程都会创建一个新的退出通道，组织好context之间的关系即可实现继承链上退出的传递。具体原理是通过propagateCancel函数将子context加入父协程的children hashmap中，并开启自身的timer，timer到期会调用cancel方法关闭自身通道和所有子context的通道。</p>
-<p>此外，context.Context接口中还提供了一个Value方法，可以提供在一个链路上的轻量级数据存储，且不会破坏原有的功能性接口。常被用于安全凭证，分布式traceid，退出信号、操作优先级与到期时间等场景。该值的作用域在结束时终结。</p>
-<h2 id="race"><a href="#race" class="headerlink" title="race"></a>race</h2><p>race工具常用于排查高并发场景下的数据争用。数据争用在go语言中指两个协程同时访问相同的内存空间，并且至少有一个在写操作。这种情况下会导致结果不明确。race可以检测数据争用并打印error report。其底层原理是通过CGO调用了ThreadSanitizer。</p>
-<p><strong>矢量时钟：</strong>用来观察事件之间的happen-before顺序。可以检测和确定分布式系统中的事件因果关系。n个协程对应n个逻辑时钟，矢量时钟是其组成的数组，每个特定事件都会增加该协程 自己的逻辑时钟。</p>
-<h2 id="Mutex"><a href="#Mutex" class="headerlink" title="Mutex"></a>Mutex</h2><p>传统的同步原语包括原子锁，互斥锁以及读写锁。</p>
-<p>go语言的互斥锁算是一种混合锁，结合了原子操作、自旋、信号量、全局哈希表、等待队列、操作系统级别锁等多种技术，实现相对复杂。但是go语言的锁相对于操作系统级别的锁更快，因为在大部分情况下锁的争用停留在用户态。</p>
-<p>其通过sync.Mutex构建互斥锁。sync.Mutex的结构比较简单，包含了表示当前锁状态的state以及信号量sema。state通过位图的形式存储了当前锁的状态，其中包含锁是否为锁定状态、正在等待被锁唤醒的协程数量、两个和饥饿模式有关的标志。</p>
-<p><strong>饥饿模式：</strong>unlock会唤醒最先申请加速的协程。</p>
-<p><strong>互斥锁的加锁三个阶段：</strong></p>
-<p>阶段1：原子操作快速抢占锁，atomic.CompareAndSwapInt32，失败则调用lockSlow自旋抢占锁一段时间，锁只有在正常模式下才能进入自旋状态，rumtime_canSpin函数</p>
-<p>阶段2：信号量sema同步，加锁减1，解锁加1，大于0加锁协程可以直接退出，等于0则加锁协程需要陷入休眠</p>
-<p>阶段3：锁的信息存储在全局semtable哈希表中，互斥锁加入等待队列，hash冲突则维护一个双向链表，其还被构造成了特殊的treap树（引入随机数的二叉搜索树），以便快速查找是否存在已经存在过的锁，如果已经存在，将当前协程添加到等待队列的尾部，如果不存在则加入treap树，维护公平性</p>
-<p>互斥锁最终被放置到全局的等待队列中等待唤醒，FIFO</p>
-<p><strong>互斥锁的释放：</strong></p>
-<p>1: 普通锁定，没有进入饥饿和唤醒状态，修改mutexLocked状态后立即退出，否则调用unlockSlow</p>
-<p>2.是否重复释放</p>
-<p>3.处于饥饿状态则进入信号量同步阶段，到semtable中寻找当前锁的等待队列，FIFO唤醒</p>
-<p>4.未处于饥饿状态且mutexWoken已经设置，表明有其他申请锁的协程准备从正常状态下退出</p>
-<p><strong>读写锁：</strong>适用于读多写少的场景，读写互斥，读多写单</p>
-<p><strong>读写锁原理：</strong>复用了互斥锁和信号量两种机制。</p>
-]]></content>
-      <categories>
-        <category>Go</category>
-      </categories>
-      <tags>
-        <tag>Go</tag>
-        <tag>并发</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>代码的坏味道</title>
-    <url>/code/restructure-the-code/</url>
-    <content><![CDATA[<p>如果想要重构代码，则不仅需要了解如何重构，还需要了解需要何时重构、何时已经达到了满意的效果避免过度重构。在《重构：改善既有代码的设计》一书中，提到了22种类型的bad code：</p>
-<span id="more"></span>
-
-<p>1.Duplicated Code</p>
-<p>如果同一个类或两个不同类的两个函数拥有相同的表达式和语句，应该第一时间想到抽取重复代码放在合适的位置比如独立类或者父类中，如果相似不全相同则可以通过template method设计模式处理，最大程度避免代码冗余。</p>
-<p>2.Long Method</p>
-<p>一般而言函数越长越难理解，现在的Object-Oriented语言基本上免除了进程内的函数调用开销。应该积极地按照功能点分解函数，并且做到函数命名能够解释其用途。</p>
-<p>3.Large Class</p>
-<p>如果一个类过大，那么往往会在使用的过程中产生很多实例变量，并且一般不会一直使用所有实例变量，因而出现很多重复代码。可以将类中彼此关系比较紧密的变量放在一起，进而拆解出多个功能明确的新类。</p>
-<p>4.Long Parameter List</p>
-<p>太长的参数列增加了理解难度，并且可能会造成前后不一致，维护困难等问题。可以通过对象的形式传递参数，或者以提取get函数取代参数。</p>
-<p>5.Divergent Change</p>
-<p>如果某个类经常因为不同的原因而在不同的方向上变化，那么就需要考虑拆分当前的类为更小的粒度，针对某一外界变化的所有相应修改都应该只发生在一个单一类中，而这个新类的所有内容都应该反应此变化。</p>
-<p>6.Shotgun Surgery</p>
-<p>如果对于一种变化能够引起“牵一发而动全身”的修改，就需要考虑把一系列相关的行为放进一个现有的合适的类或者提取新类了。</p>
-<p>7.Feature Envy</p>
-<p>数据应该和其对应的操作行为绑定一起，如果发生了交叉，那么最好进行改造和移动。</p>
-<p>8.Data Clumps</p>
-<p>类似Duplicated Code，如果多个类用于相同的字段，许多函数签名中拥有相同的参数，考虑将它们提炼到一个独立对象中。</p>
-<p>9.Primitive Obsession</p>
-<p>10.Switch Statemens</p>
-<p>11.Parallel Inheritance Hierarchies</p>
-<p>12.Lazy Class</p>
-<p>13.Speculative Generality</p>
-<p>14.Temporary Field</p>
-<p>15.MEssage Chains</p>
-<p>16.Middle Man</p>
-<p>17.Inappripriate Intimacy</p>
-<p>18.Alternative Classes with Different Interfaces</p>
-<p>19.Incomplete Library Class</p>
-<p>20.Data Class</p>
-<p>21.Refused Bequest</p>
-<p>22.Comments</p>
-]]></content>
-      <categories>
-        <category>code</category>
-      </categories>
-      <tags>
-        <tag>重构</tag>
       </tags>
   </entry>
   <entry>
@@ -693,12 +693,7 @@
       </tags>
   </entry>
   <entry>
-    <title>分类</title>
-    <url>/categories/index.html</url>
-    <content><![CDATA[]]></content>
-  </entry>
-  <entry>
-    <title>标签</title>
+    <title>TAG</title>
     <url>/tags/index.html</url>
     <content><![CDATA[]]></content>
   </entry>
@@ -708,5 +703,10 @@
     <content><![CDATA[<center>
 思考，等待，斋戒。 ——《悉达多》
 </center>]]></content>
+  </entry>
+  <entry>
+    <title>CATEGORY</title>
+    <url>/categories/index.html</url>
+    <content><![CDATA[]]></content>
   </entry>
 </search>
