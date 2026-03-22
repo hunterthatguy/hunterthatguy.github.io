@@ -2735,7 +2735,7 @@ hr {
   vertical-align: middle;
 }
 .links-of-author a::before {
-  background: #ffcd78;
+  background: #dffe38;
   display: inline-block;
   margin-right: 3px;
   transform: translateY(-2px);
@@ -2920,7 +2920,6 @@ body {
 }
 .sidebar {
   font-size: 0.9em;
-  width: 160px !important;
 }
 .sidebar .site-author-name {
   display: none !important;
