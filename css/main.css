@@ -2735,7 +2735,7 @@ hr {
   vertical-align: middle;
 }
 .links-of-author a::before {
-  background: #3cffa7;
+  background: #2fd;
   display: inline-block;
   margin-right: 3px;
   transform: translateY(-2px);
@@ -3258,4 +3258,18 @@ footer .footer-inner * {
 }
 .archive.posts-collapse {
   min-height: calc(100vh - 200px);
+}
+.archive-title {
+  font-size: 1.1em;
+  font-weight: 600;
+  color: #1a3a5c;
+  margin-bottom: 1em;
+  padding-bottom: 0.5em;
+  border-bottom: 2px solid #1a3a5c;
+}
+.tag-cloud-title {
+  font-size: 1.1em;
+  font-weight: 600;
+  color: #1a3a5c;
+  margin-bottom: 1em;
 }

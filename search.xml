@@ -1,50 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>代码的坏味道</title>
-    <url>/code/restructure-the-code/</url>
-    <content><![CDATA[<p>如果想要重构代码，则不仅需要了解如何重构，还需要了解需要何时重构、何时已经达到了满意的效果避免过度重构。在《重构：改善既有代码的设计》一书中，提到了22种类型的bad code：</p>
-<span id="more"></span>
-
-<p>1.Duplicated Code</p>
-<p>如果同一个类或两个不同类的两个函数拥有相同的表达式和语句，应该第一时间想到抽取重复代码放在合适的位置比如独立类或者父类中，如果相似不全相同则可以通过template method设计模式处理，最大程度避免代码冗余。</p>
-<p>2.Long Method</p>
-<p>一般而言函数越长越难理解，现在的Object-Oriented语言基本上免除了进程内的函数调用开销。应该积极地按照功能点分解函数，并且做到函数命名能够解释其用途。</p>
-<p>3.Large Class</p>
-<p>如果一个类过大，那么往往会在使用的过程中产生很多实例变量，并且一般不会一直使用所有实例变量，因而出现很多重复代码。可以将类中彼此关系比较紧密的变量放在一起，进而拆解出多个功能明确的新类。</p>
-<p>4.Long Parameter List</p>
-<p>太长的参数列增加了理解难度，并且可能会造成前后不一致，维护困难等问题。可以通过对象的形式传递参数，或者以提取get函数取代参数。</p>
-<p>5.Divergent Change</p>
-<p>如果某个类经常因为不同的原因而在不同的方向上变化，那么就需要考虑拆分当前的类为更小的粒度，针对某一外界变化的所有相应修改都应该只发生在一个单一类中，而这个新类的所有内容都应该反应此变化。</p>
-<p>6.Shotgun Surgery</p>
-<p>如果对于一种变化能够引起“牵一发而动全身”的修改，就需要考虑把一系列相关的行为放进一个现有的合适的类或者提取新类了。</p>
-<p>7.Feature Envy</p>
-<p>数据应该和其对应的操作行为绑定一起，如果发生了交叉，那么最好进行改造和移动。</p>
-<p>8.Data Clumps</p>
-<p>类似Duplicated Code，如果多个类用于相同的字段，许多函数签名中拥有相同的参数，考虑将它们提炼到一个独立对象中。</p>
-<p>9.Primitive Obsession</p>
-<p>10.Switch Statemens</p>
-<p>11.Parallel Inheritance Hierarchies</p>
-<p>12.Lazy Class</p>
-<p>13.Speculative Generality</p>
-<p>14.Temporary Field</p>
-<p>15.MEssage Chains</p>
-<p>16.Middle Man</p>
-<p>17.Inappripriate Intimacy</p>
-<p>18.Alternative Classes with Different Interfaces</p>
-<p>19.Incomplete Library Class</p>
-<p>20.Data Class</p>
-<p>21.Refused Bequest</p>
-<p>22.Comments</p>
-]]></content>
-      <categories>
-        <category>code</category>
-      </categories>
-      <tags>
-        <tag>重构</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Go基础知识</title>
     <url>/Go/Go-basic/</url>
     <content><![CDATA[<h2 id="1-1-语言简介"><a href="#1-1-语言简介" class="headerlink" title="1.1 语言简介"></a>1.1 语言简介</h2><p>Go： 解决并发支持不友好、编译速度慢、编程复杂这三个问题</p>
@@ -146,27 +102,6 @@
       </tags>
   </entry>
   <entry>
-    <title>Go语言设计哲学</title>
-    <url>/Go/philosophy-in-Go-language/</url>
-    <content><![CDATA[<p>Go语言的编程哲学：少即是多，并行、组合、正交、非侵入式的接口。</p>
-<p>设计软件有两种方法，一种是简单到没有明显缺陷，另一种是复杂到缺陷不那么明显，Go语言设计者明显选择的是前者。</p>
-<span id="more"></span>
-
-<p><strong>少即是多：</strong>控制语言特性的数量、语言使用的复杂性。只提供一种方法做事情，把事情做到极致，是Go的设计思想之一，比如循环只提供一个for关键字等等。Go的开发者认为增加语言特性并不能保证开发效率的提升，复杂性的增加导致使用者容易犯错，而有些复杂的语言特性可以通过库等其他形式来辅助支持。</p>
-<p><strong>正交：</strong>正交是保证事物稳定性和简单性的最好设计。Go的很多特性比如goroutine、接口、类型系统等都是正交的，特性的组合提高了可用性，而并没有增加使用的复杂性。</p>
-<p><strong>并行：</strong>Go原生支持并发，更容易对原本就并行的世界进行建模。</p>
-<p>组合：组合优于继承。继承关系只是万物各种关系的一个子集，只有组合才是世间万物最根本的，常见的关系，使用组合这种很自然的方式来建模世界，其表现力往往比以继承为基础的面向对象的语言更强。</p>
-<p><strong>非侵入式的接口：</strong>分层是计算机领域的一个重要指导思想，而接口是分层实现的一种重要战术手段。Go语言的接口采用的是一种Duck模型，具体类型不需要显式地声明自己实现了某个接口，只要其方法集是接口方法集的超集即可，判断类型是否实现接口完全交给编译器处理，从而将接口和实现者彻底解耦。这个特性使得Go程序迭代和重构更加容易。</p>
-<p>设计模式并不是语言优秀带来的副产品，而是因为语言表现力不足而不得不依赖经验积累进行弥补。虽然Go在包管理、泛型支持和错误处理上还有很多不尽人意的地方，但是Go作为面向工程的实用主义者无疑具有巨大的潜力。</p>
-]]></content>
-      <categories>
-        <category>Go</category>
-      </categories>
-      <tags>
-        <tag>Go</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>并发控制</title>
     <url>/Go/concurrent-control/</url>
     <content><![CDATA[<p>go语言在高并发场景下会用到几种关键性技术：处理协程优雅退出的context，检查并发数据争用的race工具，以及传统的同步原语——锁。</p>
@@ -200,6 +135,50 @@
       <tags>
         <tag>Go</tag>
         <tag>并发</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>代码的坏味道</title>
+    <url>/code/restructure-the-code/</url>
+    <content><![CDATA[<p>如果想要重构代码，则不仅需要了解如何重构，还需要了解需要何时重构、何时已经达到了满意的效果避免过度重构。在《重构：改善既有代码的设计》一书中，提到了22种类型的bad code：</p>
+<span id="more"></span>
+
+<p>1.Duplicated Code</p>
+<p>如果同一个类或两个不同类的两个函数拥有相同的表达式和语句，应该第一时间想到抽取重复代码放在合适的位置比如独立类或者父类中，如果相似不全相同则可以通过template method设计模式处理，最大程度避免代码冗余。</p>
+<p>2.Long Method</p>
+<p>一般而言函数越长越难理解，现在的Object-Oriented语言基本上免除了进程内的函数调用开销。应该积极地按照功能点分解函数，并且做到函数命名能够解释其用途。</p>
+<p>3.Large Class</p>
+<p>如果一个类过大，那么往往会在使用的过程中产生很多实例变量，并且一般不会一直使用所有实例变量，因而出现很多重复代码。可以将类中彼此关系比较紧密的变量放在一起，进而拆解出多个功能明确的新类。</p>
+<p>4.Long Parameter List</p>
+<p>太长的参数列增加了理解难度，并且可能会造成前后不一致，维护困难等问题。可以通过对象的形式传递参数，或者以提取get函数取代参数。</p>
+<p>5.Divergent Change</p>
+<p>如果某个类经常因为不同的原因而在不同的方向上变化，那么就需要考虑拆分当前的类为更小的粒度，针对某一外界变化的所有相应修改都应该只发生在一个单一类中，而这个新类的所有内容都应该反应此变化。</p>
+<p>6.Shotgun Surgery</p>
+<p>如果对于一种变化能够引起“牵一发而动全身”的修改，就需要考虑把一系列相关的行为放进一个现有的合适的类或者提取新类了。</p>
+<p>7.Feature Envy</p>
+<p>数据应该和其对应的操作行为绑定一起，如果发生了交叉，那么最好进行改造和移动。</p>
+<p>8.Data Clumps</p>
+<p>类似Duplicated Code，如果多个类用于相同的字段，许多函数签名中拥有相同的参数，考虑将它们提炼到一个独立对象中。</p>
+<p>9.Primitive Obsession</p>
+<p>10.Switch Statemens</p>
+<p>11.Parallel Inheritance Hierarchies</p>
+<p>12.Lazy Class</p>
+<p>13.Speculative Generality</p>
+<p>14.Temporary Field</p>
+<p>15.MEssage Chains</p>
+<p>16.Middle Man</p>
+<p>17.Inappripriate Intimacy</p>
+<p>18.Alternative Classes with Different Interfaces</p>
+<p>19.Incomplete Library Class</p>
+<p>20.Data Class</p>
+<p>21.Refused Bequest</p>
+<p>22.Comments</p>
+]]></content>
+      <categories>
+        <category>code</category>
+      </categories>
+      <tags>
+        <tag>重构</tag>
       </tags>
   </entry>
   <entry>
@@ -693,6 +672,27 @@
       </tags>
   </entry>
   <entry>
+    <title>Go语言设计哲学</title>
+    <url>/Go/philosophy-in-Go-language/</url>
+    <content><![CDATA[<p>Go语言的编程哲学：少即是多，并行、组合、正交、非侵入式的接口。</p>
+<p>设计软件有两种方法，一种是简单到没有明显缺陷，另一种是复杂到缺陷不那么明显，Go语言设计者明显选择的是前者。</p>
+<span id="more"></span>
+
+<p><strong>少即是多：</strong>控制语言特性的数量、语言使用的复杂性。只提供一种方法做事情，把事情做到极致，是Go的设计思想之一，比如循环只提供一个for关键字等等。Go的开发者认为增加语言特性并不能保证开发效率的提升，复杂性的增加导致使用者容易犯错，而有些复杂的语言特性可以通过库等其他形式来辅助支持。</p>
+<p><strong>正交：</strong>正交是保证事物稳定性和简单性的最好设计。Go的很多特性比如goroutine、接口、类型系统等都是正交的，特性的组合提高了可用性，而并没有增加使用的复杂性。</p>
+<p><strong>并行：</strong>Go原生支持并发，更容易对原本就并行的世界进行建模。</p>
+<p>组合：组合优于继承。继承关系只是万物各种关系的一个子集，只有组合才是世间万物最根本的，常见的关系，使用组合这种很自然的方式来建模世界，其表现力往往比以继承为基础的面向对象的语言更强。</p>
+<p><strong>非侵入式的接口：</strong>分层是计算机领域的一个重要指导思想，而接口是分层实现的一种重要战术手段。Go语言的接口采用的是一种Duck模型，具体类型不需要显式地声明自己实现了某个接口，只要其方法集是接口方法集的超集即可，判断类型是否实现接口完全交给编译器处理，从而将接口和实现者彻底解耦。这个特性使得Go程序迭代和重构更加容易。</p>
+<p>设计模式并不是语言优秀带来的副产品，而是因为语言表现力不足而不得不依赖经验积累进行弥补。虽然Go在包管理、泛型支持和错误处理上还有很多不尽人意的地方，但是Go作为面向工程的实用主义者无疑具有巨大的潜力。</p>
+]]></content>
+      <categories>
+        <category>Go</category>
+      </categories>
+      <tags>
+        <tag>Go</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>ABOUT</title>
     <url>/about/index.html</url>
     <content><![CDATA[<center>
@@ -700,13 +700,13 @@
 </center>]]></content>
   </entry>
   <entry>
-    <title>TAG</title>
-    <url>/tags/index.html</url>
+    <title>CATEGORY</title>
+    <url>/categories/index.html</url>
     <content><![CDATA[]]></content>
   </entry>
   <entry>
-    <title>CATEGORY</title>
-    <url>/categories/index.html</url>
+    <title>TAG</title>
+    <url>/tags/index.html</url>
     <content><![CDATA[]]></content>
   </entry>
 </search>

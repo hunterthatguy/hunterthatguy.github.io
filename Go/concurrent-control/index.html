@@ -24,7 +24,7 @@
 <meta property="og:type" content="article">
 <meta property="og:title" content="并发控制">
 <meta property="og:url" content="https://hunterthatguy.github.io/Go/concurrent-control/index.html">
-<meta property="og:site_name" content="静水流深">
+<meta property="og:site_name" content="静水流深的世界">
 <meta property="og:description" content="go语言在高并发场景下会用到几种关键性技术：处理协程优雅退出的context，检查并发数据争用的race工具，以及传统的同步原语——锁。 context在go程序中可能同时存在许多协程，这些协程被动态的创建和销毁。例如在http服务器中无时无刻不在发生新连接的建立，每个连接都可能新建一个协程。虽然请求完成后协程会随之销毁，考虑到连接可能超时或终止，context的引入无疑提供了一种优雅控制协程退出">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2022-02-13T10:08:25.000Z">
@@ -42,7 +42,7 @@
 <script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://hunterthatguy.github.io/Go/concurrent-control/","path":"Go/concurrent-control/","title":"并发控制"}</script>
 
 <script class="next-config" data-name="calendar" type="application/json">""</script>
-<title>并发控制 | 静水流深</title>
+<title>并发控制 | 静水流深的世界</title>
   
 
 
@@ -72,7 +72,7 @@
 
     <a href="/" class="brand" rel="start">
       <i class="logo-line"></i>
-      <p class="site-title">静水流深</p>
+      <p class="site-title">静水流深的世界</p>
       <i class="logo-line"></i>
     </a>
   </div>
@@ -193,15 +193,15 @@
   </div>
   <ul class="sidebar-category-list-content">
       <li class="sidebar-category-list-item">
-        <a class="sidebar-category-list-link" href="/categories/code/">
-          <span class="sidebar-category-list-name">code</span>
-          <span class="sidebar-category-list-count">(1)</span>
-        </a>
-      </li>
-      <li class="sidebar-category-list-item">
         <a class="sidebar-category-list-link" href="/categories/Go/">
           <span class="sidebar-category-list-name">Go</span>
           <span class="sidebar-category-list-count">(3)</span>
+        </a>
+      </li>
+      <li class="sidebar-category-list-item">
+        <a class="sidebar-category-list-link" href="/categories/code/">
+          <span class="sidebar-category-list-name">code</span>
+          <span class="sidebar-category-list-count">(1)</span>
         </a>
       </li>
       <li class="sidebar-category-list-item">
@@ -221,12 +221,6 @@
   </div>
   <ul class="sidebar-tag-list-content">
       <li class="sidebar-tag-list-item">
-        <a class="sidebar-tag-list-link" href="/tags/%E9%87%8D%E6%9E%84/">
-          <span class="sidebar-tag-list-name">重构</span>
-          <span class="sidebar-tag-list-count">(1)</span>
-        </a>
-      </li>
-      <li class="sidebar-tag-list-item">
         <a class="sidebar-tag-list-link" href="/tags/Go/">
           <span class="sidebar-tag-list-name">Go</span>
           <span class="sidebar-tag-list-count">(3)</span>
@@ -241,6 +235,12 @@
       <li class="sidebar-tag-list-item">
         <a class="sidebar-tag-list-link" href="/tags/%E5%B9%B6%E5%8F%91/">
           <span class="sidebar-tag-list-name">并发</span>
+          <span class="sidebar-tag-list-count">(1)</span>
+        </a>
+      </li>
+      <li class="sidebar-tag-list-item">
+        <a class="sidebar-tag-list-link" href="/tags/%E9%87%8D%E6%9E%84/">
+          <span class="sidebar-tag-list-name">重构</span>
           <span class="sidebar-tag-list-count">(1)</span>
         </a>
       </li>
@@ -310,7 +310,7 @@
     </span>
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="静水流深">
+      <meta itemprop="name" content="静水流深的世界">
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
